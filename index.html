@@ -1,0 +1,104 @@
+<html>
+	<head>
+		<title>financial independence calculator</title>
+		<script>
+			function reset() {
+				document.getElementById("annualIncome").value = 0;
+				document.getElementById("annualExpenses").value = 0;
+				document.getElementById("currentPortfolioValue").value = 0;
+				document.getElementById("annualReturnPercentage").value = 5.0;
+				document.getElementById("withdrawalPercentage").value = 4.0;
+				calculate();
+			}
+
+			function onAnnualSavingsChanged() {
+				var annualIncome = document.getElementById("annualIncome").value;
+				var annualSavings = document.getElementById("annualSavings").value;
+				var annualExpenses = annualIncome - annualSavings;
+				document.getElementById("annualExpenses").value = annualExpenses;
+				calculate();
+			}
+
+			function calculate() {
+				var annualIncome = document.getElementById("annualIncome").value;
+				var annualExpenses = document.getElementById("annualExpenses").value;
+				var annualSavings = annualIncome - annualExpenses;
+				document.getElementById("annualSavings").value = annualSavings;
+				if (annualExpenses == 0) {
+					document.getElementById("result").innerHTML = ``;
+					return;
+				}
+				if (annualExpenses < 0) {
+					document.getElementById("result").innerHTML = `You are already financially independent since you have no expenses.`;
+					return;
+				}
+
+				var withdrawalPercentage = document.getElementById("withdrawalPercentage").value;
+				if (withdrawalPercentage < 0) {
+					withdrawalPercentage *= -1;
+					document.getElementById("withdrawalPercentage").value = withdrawalPercentage;
+				}
+				var withdrawalRate = withdrawalPercentage / 100;
+				var targetPortfolioValue = annualExpenses / withdrawalRate;
+				var currentPortfolioValue = document.getElementById("currentPortfolioValue").value;
+				var targetPortfolioDifference = targetPortfolioValue - currentPortfolioValue;
+				if (targetPortfolioDifference <= 0) {
+					var currentWithdrawalRate = (100 * annualExpenses / currentPortfolioValue).toFixed(1) + '%';
+					document.getElementById("result").innerHTML = `You are already financially independent with a <strong>${currentWithdrawalRate} withdrawal rate</strong>.`;
+					return;
+				}
+				var annualReturnPercentage = document.getElementById("annualReturnPercentage").value;
+				var monthlyReturnRate = Math.pow((1 + annualReturnPercentage / 100), 1 / 12) - 1;
+				var monthlySavings = annualSavings / 12 + currentPortfolioValue * monthlyReturnRate;
+				if (monthlySavings <= 0) {
+					var annualExpensesOverage = Math.ceil(-monthlySavings * 12);
+					document.getElementById("result").innerHTML = `You are not making progress toward financial independence. You need to <strong>cut spending by at least ${annualExpensesOverage} per year</strong>.`;
+					return;
+				}
+				var totalMonthsRequired = Math.log(1 + targetPortfolioDifference / monthlySavings * monthlyReturnRate) / Math.log(1 + monthlyReturnRate);
+				if (isNaN(totalMonthsRequired)) {
+					if (monthlyReturnRate < 0) {
+						document.getElementById("result").innerHTML = `You are not making progress toward financial indepenence. You should consider making investments that yield positive returns.`;
+						return;
+					}
+				}
+				var yearsRequired = Math.floor(Math.ceil(totalMonthsRequired) / 12);
+				var monthsRequired = Math.ceil(Math.ceil(totalMonthsRequired) % 12);
+				var savingsRate = (100 * annualSavings / annualIncome).toFixed(1) + '%';
+				document.getElementById("result").innerHTML = `With a savings rate of <strong>${savingsRate}</strong>, you will be financially independent in <strong>${yearsRequired} year${yearsRequired == 1 ? '' : 's'} and ${monthsRequired} month${monthsRequired == 1 ? '' : 's'}</strong>.`;
+			}
+		</script>
+	</head>
+	<body onload="reset()">
+		<table>
+			<tr>
+				<td>annual income</td>
+				<td><input type="number" id="annualIncome" onkeyup="calculate()" onchange="calculate()" min="0" step="1000"/></td>
+			</tr>
+			<tr>
+				<td>annual expenses</td>
+				<td><input type="number" id="annualExpenses" onkeyup="calculate()" onchange="calculate()" min="0" step="1000"/></td>
+			</tr>
+			<tr>
+				<td>annual savings</td>
+				<td><input type="number" id="annualSavings" onkeyup="onAnnualSavingsChanged()" onchange="onAnnualSavingsChanged()"/></td>
+			</tr>
+			<tr>
+				<td>current portfolio value</td>
+				<td><input type="number" id="currentPortfolioValue" onkeyup="calculate()" onchange="calculate()"/></td>
+			</tr>
+			<tr>
+				<td>annual return (%)</td>
+				<td><input type="number" id="annualReturnPercentage" onkeyup="calculate()" onchange="calculate()" min="0" step=".1"/></td>
+			</tr>
+			<tr>
+				<td>safe withdrawal rate (%)</td>
+				<td><input type="number" id="withdrawalPercentage" onkeyup="calculate()" onchange="calculate()" min="0" step=".1"/></td>
+			</tr>
+			<tr>
+				<td colspan="2"><button onclick="reset()">reset</button></td>
+			</tr>
+		</table>
+		<p id="result"/>
+	</body>
+</html>
