@@ -52,10 +52,18 @@
 				var monthlySavings = annualSavings / 12 + currentPortfolioValue * monthlyReturnRate;
 				if (monthlySavings <= 0) {
 					var annualExpensesOverage = Math.ceil(-monthlySavings * 12);
+					if (annualExpensesOverage == 0) {
+						annualExpensesOverage = 1;
+					}
 					document.getElementById("result").innerHTML = `You are not making progress toward financial independence. You need to <strong>cut spending by at least ${annualExpensesOverage} per year</strong>.`;
 					return;
 				}
-				var totalMonthsRequired = Math.log(1 + targetPortfolioDifference / monthlySavings * monthlyReturnRate) / Math.log(1 + monthlyReturnRate);
+				var totalMonthsRequired;
+				if (monthlyReturnRate == 0) {
+					totalMonthsRequired = targetPortfolioDifference / monthlySavings;
+				} else {
+					totalMonthsRequired = Math.log(1 + targetPortfolioDifference / monthlySavings * monthlyReturnRate) / Math.log(1 + monthlyReturnRate);
+				}
 				if (isNaN(totalMonthsRequired)) {
 					if (monthlyReturnRate < 0) {
 						document.getElementById("result").innerHTML = `You are not making progress toward financial indepenence. You should consider making investments that yield positive returns.`;
