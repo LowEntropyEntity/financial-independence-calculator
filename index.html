@@ -8,46 +8,51 @@
 				document.getElementById("currentPortfolioValue").value = 0;
 				document.getElementById("annualReturnPercentage").value = 5.0;
 				document.getElementById("withdrawalPercentage").value = 4.0;
+				document.getElementById("result1").innerHTML = ``;
+				document.getElementById("result2").innerHTML = ``;
 				calculate();
 			}
 
 			function onAnnualSavingsChanged() {
-				var annualIncome = document.getElementById("annualIncome").value;
-				var annualSavings = document.getElementById("annualSavings").value;
+				var annualIncome = Number(document.getElementById("annualIncome").value);
+				var annualSavings = Number(document.getElementById("annualSavings").value);
 				var annualExpenses = annualIncome - annualSavings;
 				document.getElementById("annualExpenses").value = annualExpenses;
 				calculate();
 			}
 
 			function calculate() {
-				var annualIncome = document.getElementById("annualIncome").value;
-				var annualExpenses = document.getElementById("annualExpenses").value;
+				var annualIncome = Number(document.getElementById("annualIncome").value);
+				var annualExpenses = Number(document.getElementById("annualExpenses").value);
 				var annualSavings = annualIncome - annualExpenses;
 				document.getElementById("annualSavings").value = annualSavings;
 				if (annualExpenses == 0) {
-					document.getElementById("result").innerHTML = ``;
+					document.getElementById("result1").innerHTML = ``;
+					document.getElementById("result2").innerHTML = ``;
 					return;
 				}
 				if (annualExpenses < 0) {
-					document.getElementById("result").innerHTML = `You are already financially independent since you have no expenses.`;
+					document.getElementById("result1").innerHTML = ``;
+					document.getElementById("result2").innerHTML = `You are already financially independent since you have no expenses.`;
 					return;
 				}
 
-				var withdrawalPercentage = document.getElementById("withdrawalPercentage").value;
+				var withdrawalPercentage = Number(document.getElementById("withdrawalPercentage").value);
 				if (withdrawalPercentage < 0) {
 					withdrawalPercentage *= -1;
 					document.getElementById("withdrawalPercentage").value = withdrawalPercentage;
 				}
 				var withdrawalRate = withdrawalPercentage / 100;
 				var targetPortfolioValue = annualExpenses / withdrawalRate;
-				var currentPortfolioValue = document.getElementById("currentPortfolioValue").value;
+				document.getElementById("result1").innerHTML = `An annual expense of <strong>${numberWithCommas(annualExpenses.toFixed(0))}</strong> with a <strong>${withdrawalPercentage.toFixed(1)}%</strong> withdrawal rate requires a portfolio of <strong>${numberWithCommas(targetPortfolioValue.toFixed(0))}</strong>.`;
+				var currentPortfolioValue = Number(document.getElementById("currentPortfolioValue").value);
 				var targetPortfolioDifference = targetPortfolioValue - currentPortfolioValue;
 				if (targetPortfolioDifference <= 0) {
 					var currentWithdrawalRate = (100 * annualExpenses / currentPortfolioValue).toFixed(1) + '%';
-					document.getElementById("result").innerHTML = `You are already financially independent with a <strong>${currentWithdrawalRate} withdrawal rate</strong>.`;
+					document.getElementById("result2").innerHTML = `You are already financially independent with a <strong>${currentWithdrawalRate} withdrawal rate</strong>.`;
 					return;
 				}
-				var annualReturnPercentage = document.getElementById("annualReturnPercentage").value;
+				var annualReturnPercentage = Number(document.getElementById("annualReturnPercentage").value);
 				var monthlyReturnRate = Math.pow((1 + annualReturnPercentage / 100), 1 / 12) - 1;
 				var monthlySavings = annualSavings / 12 + currentPortfolioValue * monthlyReturnRate;
 				if (monthlySavings <= 0) {
@@ -55,7 +60,7 @@
 					if (annualExpensesOverage == 0) {
 						annualExpensesOverage = 1;
 					}
-					document.getElementById("result").innerHTML = `You are not making progress toward financial independence. You need to <strong>cut spending by at least ${annualExpensesOverage} per year</strong>.`;
+					document.getElementById("result2").innerHTML = `You are not making progress toward financial independence. You need to <strong>cut spending by at least ${annualExpensesOverage} per year</strong>.`;
 					return;
 				}
 				var totalMonthsRequired;
@@ -66,14 +71,19 @@
 				}
 				if (isNaN(totalMonthsRequired)) {
 					if (monthlyReturnRate < 0) {
-						document.getElementById("result").innerHTML = `You are not making progress toward financial indepenence. You should consider making investments that yield positive returns.`;
+						document.getElementById("result2").innerHTML = `You are not making progress toward financial indepenence. You should consider making investments that yield positive returns.`;
 						return;
 					}
 				}
 				var yearsRequired = Math.floor(Math.ceil(totalMonthsRequired) / 12);
 				var monthsRequired = Math.ceil(Math.ceil(totalMonthsRequired) % 12);
 				var savingsRate = (100 * annualSavings / annualIncome).toFixed(1) + '%';
-				document.getElementById("result").innerHTML = `With a savings rate of <strong>${savingsRate}</strong>, you will be financially independent in <strong>${yearsRequired} year${yearsRequired == 1 ? '' : 's'} and ${monthsRequired} month${monthsRequired == 1 ? '' : 's'}</strong>.`;
+				document.getElementById("result2").innerHTML = `With a savings rate of <strong>${savingsRate}</strong>, you will be financially independent in <strong>${yearsRequired} year${yearsRequired == 1 ? '' : 's'} and ${monthsRequired} month${monthsRequired == 1 ? '' : 's'}</strong>.`;
+			}
+
+			// attribution: https://stackoverflow.com/a/2901298
+			function numberWithCommas(x) {
+				return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 			}
 		</script>
 	</head>
@@ -107,6 +117,7 @@
 				<td colspan="2"><button onclick="reset()">reset</button></td>
 			</tr>
 		</table>
-		<p id="result"/>
+		<p id="result1"/>
+		<p id="result2"/>
 	</body>
 </html>
