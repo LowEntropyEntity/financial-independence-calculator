@@ -1,6 +1,7 @@
 <html>
 	<head>
 		<title>financial independence calculator</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1"/>
 		<script>
 			function reset() {
 				document.getElementById("annualIncome").value = 0;
@@ -103,7 +104,7 @@
 			</tr>
 			<tr>
 				<td>current portfolio value</td>
-				<td><input type="number" id="currentPortfolioValue" onkeyup="calculate()" onchange="calculate()"/></td>
+				<td><input type="number" id="currentPortfolioValue" onkeyup="calculate()" onchange="calculate()" min="0" step="10000"/></td>
 			</tr>
 			<tr>
 				<td>annual return (%)</td>
